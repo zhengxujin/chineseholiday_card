@@ -3,6 +3,11 @@ const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
 class ChineseCalendarCard extends LitElement {
+  static getStubConfig() {
+    return {
+	"text": '',
+    };
+  }
 
   static get styles() {
 
@@ -76,6 +81,22 @@ class ChineseCalendarCard extends LitElement {
           margin-right: 20px;
           margin-top: -10px;
         }
+        .date_text {
+          font-size: 16px;
+          color: var(--main-title-color);
+          margin-right: 20px;
+          margin-left: 20px;
+          margin-top: 20px;
+        }
+        .date_pdtime {
+          font-size: 36px;
+          color: var(--main-title-color);
+          margin-right: 20px;
+          text-align: center;
+          margin-left: 20px;
+          padding-top: 30px;
+        }
+
         .latest_title {
           color: var(--main-title-color);
           font-size: 14px;
@@ -147,12 +168,36 @@ class ChineseCalendarCard extends LitElement {
     `;
   }
 
-   render() {
+   render({config} = this) {
+    var date = new Date()
+    var hour = date.getHours()
+    var pdtime = ''
+    var yeshen = ''
+    if(hour >=6 && hour <9){
+        pdtime = "早上好，"
+    }else if(hour >=9 && hour <12){
+        pdtime = "上午好，"
+    }else if(hour >=12 && hour <13){
+        pdtime = "中午好，"
+    }else if(hour >=13 && hour <18){
+        pdtime = "下午好，"
+    }else if(hour >=18 && hour <23){
+        pdtime = "晚上好，"
+    }else{
+        pdtime = "夜深了，"
+        yeshen = "夜深了，不要熬夜了，"
+    }
     return html`
       <ha-card>
         <div class="container" @click=${this._moreInfo}>
           <div style="align-items: baseline;">
             <div class="title">${this.title}</div>
+          </div>
+          <div class="date_pdtime">
+          ${pdtime}${this.user}
+          </div>
+          <div class="date_text">
+          ${config.text}一日三餐，记得按时吃饭，${yeshen}身体健康最重要！
           </div>
           <div class="date_solar">
             ${this.attributes.solar}
@@ -162,7 +207,7 @@ class ChineseCalendarCard extends LitElement {
           </div>
           <div class="date_week">
             <p class="icon_state" style="background: none, url(${this.getStateIcon(this.calendarEntity.state)}) no-repeat; background-size: contain;"></p>
-            ${this.attributes.week}
+            ${this.calendarEntity.state}丨${this.attributes.week}
           </div>
           <!--
           <div class="date_week">
@@ -225,6 +270,8 @@ class ChineseCalendarCard extends LitElement {
 
       </ha-card>
     `;
+
+    
   }
 
   firstUpdated() {
@@ -271,7 +318,6 @@ class ChineseCalendarCard extends LitElement {
     }, 1000);
 
   }
-
   set hass(hass) {
     this._hass = hass;
     // this.lang = this._hass.selectedLanguage || this._hass.language;
@@ -284,6 +330,8 @@ class ChineseCalendarCard extends LitElement {
     if (!attributes) {
       return;
     }
+    var user = this._hass.user.name
+    this.user = user
     this.attributes = attributes;
     // attributes['term'] = '春分';
     // attributes['festival'] = '春节';
@@ -346,11 +394,6 @@ class ChineseCalendarCard extends LitElement {
 
     }
 
-
-    if (beAdd) {
-      list.push(beAdd);
-    }
-
     if (attributes.hasOwnProperty('next_anniversaries')) {
         var next_anniversaries = attributes['next_anniversaries'];
         for (var i = 0; i < next_anniversaries.length;i++) {
@@ -359,6 +402,10 @@ class ChineseCalendarCard extends LitElement {
         }    
     }
 
+
+    if (beAdd) {
+      list.push(beAdd);
+    }
 
     if (attributes.hasOwnProperty('future_dates')) {
       var future_dates = attributes['future_dates'];
